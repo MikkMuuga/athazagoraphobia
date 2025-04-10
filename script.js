@@ -15,7 +15,8 @@ const gameState = {
     journal: [],
     achievements: [],
     visitedScenes: new Set(),
-    flags: {} // For tracking game progress and choices
+    flags: {}, // For tracking game progress and choices
+    systemScreens: {} // Will store loaded system screens
 };
  
 // Game scenes database
@@ -85,6 +86,18 @@ const scenes = {
     }
     // More scenes can be added as needed
 };
+
+async function loadSystemScreens() {
+    try {
+        const response = await fetch('scenes/system.json');
+        if (!response.ok) {
+            throw new Error('Failed to load system screens');
+        }
+        gameState.systemScreens = await response.json();
+    } catch (error) {
+        console.error('Error loading system screens:', error);
+    }
+}
  
 // DOM elements
 const contentArea = document.getElementById('content-area');
@@ -96,8 +109,9 @@ const settingsButton = document.getElementById('settings-button');
 const restartButton = document.getElementById('restart-button');
  
 // Initialize the game
-function initGame() {
-    displayScene('intro');
+async function initGame() {
+    await loadSystemScreens();
+    await displayScene('intro');
     setupEventListeners();
 }
  
@@ -178,184 +192,161 @@ function displayScene(sceneId) {
     });
 }
  
-// Display character screen
-function displayCharacter() {
-    const content = `
-        <div id="character-content">
-            <h1 class="chapter-title">Character</h1>
-            <p class="story-paragraph"><strong>Name:</strong> ${gameState.character.name || "Unknown"}</p>
-            <p class="story-paragraph"><strong>Gender:</strong> ${gameState.character.gender || "Unknown"}</p>
-           
-            <h2 style="margin-top: 20px; color: var(--accent-color);">Stats</h2>
-            <div class="stats-container">
-                <div class="stat-item">
-                    <span class="stat-label">Strength:</span> ${gameState.character.stats.strength}
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Agility:</span> ${gameState.character.stats.agility}
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Intelligence:</span> ${gameState.character.stats.intelligence}
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Charisma:</span> ${gameState.character.stats.charisma}
-                </div>
-            </div>
-           
-            <h2 style="margin-top: 20px; color: var(--accent-color);">Inventory</h2>
-            <div>
-                ${gameState.character.inventory.length > 0
-                    ? gameState.character.inventory.map(item => `<p>• ${item}</p>`).join('')
-                    : '<p>Your inventory is empty.</p>'}
-            </div>
-           
-            <button class="back-button" id="back-to-game">Return to Game</button>
-        </div>
-    `;
-   
-    contentArea.innerHTML = content;
-   
-    document.getElementById('back-to-game').addEventListener('click', function() {
-        displayScene(gameState.currentScene);
-    });
-}
- 
-// Display journal screen
-function displayJournal() {
-    const content = `
-        <div id="journal-content">
-            <h1 class="chapter-title">Journal</h1>
-            ${gameState.journal.length > 0
-                ? gameState.journal.map(entry => `
-                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-color);">
-                        <p class="story-paragraph">${entry.text}</p>
-                        <p style="font-size: 0.8em; color: var(--accent-color);">${entry.timestamp}</p>
-                    </div>
-                `).join('')
-                : '<p class="story-paragraph">Your journal is empty. Notes will appear here as you discover important information.</p>'
-            }
-           
-            <button class="back-button" id="back-to-game">Return to Game</button>
-        </div>
-    `;
-   
-    contentArea.innerHTML = content;
-   
-    document.getElementById('back-to-game').addEventListener('click', function() {
-        displayScene(gameState.currentScene);
-    });
-}
- 
-// Display achievements screen
-function displayAchievements() {
-    const content = `
-        <div id="achievements-content">
-            <h1 class="chapter-title">Achievements</h1>
-            ${gameState.achievements.length > 0
-                ? gameState.achievements.map(achievement => `
-                    <div style="margin-bottom: 15px; padding: 10px; background-color: rgba(255, 255, 255, 0.05); border-radius: 4px;">
-                        <p style="font-weight: bold; color: var(--accent-color);">${achievement}</p>
-                    </div>
-                `).join('')
-                : '<p class="story-paragraph">No achievements unlocked yet. Explore the world to discover achievements.</p>'
-            }
-           
-            <button class="back-button" id="back-to-game">Return to Game</button>
-        </div>
-    `;
-   
-    contentArea.innerHTML = content;
-   
-    document.getElementById('back-to-game').addEventListener('click', function() {
-        displayScene(gameState.currentScene);
-    });
-}
- 
-// Display saves screen
-function displaySaves() {
-    let saveSlots = '';
-   
-    for (let i = 1; i <= 3; i++) {
-        const saveExists = localStorage.getItem(`athazagoraphobia_save_${i}`);
-        let saveInfo = 'Empty Slot';
-       
-        if (saveExists) {
-            const saveData = JSON.parse(saveExists);
-            const sceneName = saveData.currentScene;
-            saveInfo = `Scene: ${sceneName}`;
-            if (saveData.character && saveData.character.name) {
-                saveInfo += ` | Character: ${saveData.character.name}`;
-            }
-        }
-       
-        saveSlots += `
-            <div class="save-slot">
-                <div>
-                    <strong>Slot ${i}</strong><br>
-                    ${saveInfo}
-                </div>
-                <div>
-                    <button class="save-slot-button" data-action="save" data-slot="${i}">Save</button>
-                    ${saveExists ? `<button class="save-slot-button" data-action="load" data-slot="${i}">Load</button>` : ''}
-                </div>
-            </div>
-        `;
+async function displaySystemScreen(screenId) {
+    const screen = gameState.systemScreens[screenId];
+    if (!screen) {
+        console.error(`System screen "${screenId}" not found!`);
+        return;
     }
-   
-    const content = `
-        <div id="saves-content">
-            <h1 class="chapter-title">Save Game</h1>
-            ${saveSlots}
-            <button class="back-button" id="back-to-game">Return to Game</button>
-        </div>
-    `;
-   
+
+    let content = '';
+    
+    // Add title if exists
+    if (screen.title) {
+        content += `<h1 class="chapter-title">${screen.title}</h1>`;
+    }
+    
+    // Process content
+    let screenContent = processSystemContent(screen.content, screenId);
+    content += screenContent;
+    
+    // Add choices
+    if (screen.choices && screen.choices.length > 0) {
+        content += '<div class="choice-container">';
+        screen.choices.forEach((choice) => {
+            content += `<button class="choice-button" data-action="${choice.action}">
+                         ${choice.text}
+                       </button>`;
+        });
+        content += '</div>';
+    }
+    
     contentArea.innerHTML = content;
-   
-    // Set up save/load buttons
-    document.querySelectorAll('.save-slot-button').forEach(button => {
+    
+    // Set up event listeners for buttons
+    document.querySelectorAll('.choice-button').forEach(button => {
         button.addEventListener('click', function() {
             const action = this.getAttribute('data-action');
-            const slot = this.getAttribute('data-slot');
-           
-            if (action === 'save') {
-                saveGame(slot);
-            } else if (action === 'load') {
-                loadGame(slot);
+            if (action === 'backToGame') {
+                displayScene(gameState.currentScene);
             }
         });
     });
-   
-    document.getElementById('back-to-game').addEventListener('click', function() {
-        displayScene(gameState.currentScene);
-    });
+    
+    // Special handling for save slots
+    if (screenId === 'saves_screen') {
+        document.querySelectorAll('.save-slot-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                const slot = this.getAttribute('data-slot');
+               
+                if (action === 'save') {
+                    saveGame(slot);
+                } else if (action === 'load') {
+                    loadGame(slot);
+                }
+            });
+        });
+    }
 }
- 
-// Display settings screen
-function displaySettings() {
-    const content = `
-        <div id="settings-content">
-            <h1 class="chapter-title">Settings</h1>
-            <p class="story-paragraph">Game settings will appear here in future updates.</p>
-            <button class="back-button" id="back-to-game">Return to Game</button>
-        </div>
-    `;
-   
-    contentArea.innerHTML = content;
-   
-    document.getElementById('back-to-game').addEventListener('click', function() {
-        displayScene(gameState.currentScene);
-    });
+
+function processSystemContent(template, screenId) {
+    // Simple template processing
+    let content = template;
+    
+    // Handle character screen
+    if (screenId === 'character_screen') {
+        content = content.replace(/\{\{character\.name\}\}/g, gameState.character.name || "Unknown")
+                         .replace(/\{\{character\.gender\}\}/g, gameState.character.gender || "Unknown")
+                         .replace(/\{\{character\.stats\.strength\}\}/g, gameState.character.stats.strength)
+                         .replace(/\{\{character\.stats\.agility\}\}/g, gameState.character.stats.agility)
+                         .replace(/\{\{character\.stats\.intelligence\}\}/g, gameState.character.stats.intelligence)
+                         .replace(/\{\{character\.stats\.charisma\}\}/g, gameState.character.stats.charisma);
+        
+        // Handle inventory
+        if (gameState.character.inventory.length > 0) {
+            content = content.replace(/\{\{#if character\.inventory\.length\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1')
+                            .replace(/\{\{#each character\.inventory\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, itemTemplate) => {
+                                return gameState.character.inventory.map(item => 
+                                    itemTemplate.replace(/\{\{this\}\}/g, item)
+                                ).join('');
+                            });
+        } else {
+            content = content.replace(/\{\{#if character\.inventory\.length\}\}[\s\S]*?\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1');
+        }
+    }
+    
+    // Handle journal screen
+    else if (screenId === 'journal_screen') {
+        if (gameState.journal.length > 0) {
+            content = content.replace(/\{\{#if journal\.length\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1')
+                            .replace(/\{\{#each journal\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, entryTemplate) => {
+                                return gameState.journal.map(entry => 
+                                    entryTemplate.replace(/\{\{this\.text\}\}/g, entry.text)
+                                                .replace(/\{\{this\.timestamp\}\}/g, entry.timestamp)
+                                ).join('');
+                            });
+        } else {
+            content = content.replace(/\{\{#if journal\.length\}\}[\s\S]*?\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1');
+        }
+    }
+    
+    // Handle achievements screen
+    else if (screenId === 'achievements_screen') {
+        if (gameState.achievements.length > 0) {
+            content = content.replace(/\{\{#if achievements\.length\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1')
+                            .replace(/\{\{#each achievements\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, achievementTemplate) => {
+                                return gameState.achievements.map(achievement => 
+                                    achievementTemplate.replace(/\{\{this\}\}/g, achievement)
+                                ).join('');
+                            });
+        } else {
+            content = content.replace(/\{\{#if achievements\.length\}\}[\s\S]*?\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1');
+        }
+    }
+    
+    // Handle saves screen
+    else if (screenId === 'saves_screen') {
+        let saveSlots = [];
+        for (let i = 1; i <= 3; i++) {
+            const saveExists = localStorage.getItem(`athazagoraphobia_save_${i}`);
+            let saveInfo = 'Empty Slot';
+            
+            if (saveExists) {
+                const saveData = JSON.parse(saveExists);
+                const sceneName = saveData.currentScene;
+                saveInfo = `Scene: ${sceneName}`;
+                if (saveData.character && saveData.character.name) {
+                    saveInfo += ` | Character: ${saveData.character.name}`;
+                }
+            }
+            
+            saveSlots.push({
+                exists: !!saveExists,
+                info: saveInfo
+            });
+        }
+        
+        content = content.replace(/\{\{#each saveSlots\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, slotTemplate) => {
+            return saveSlots.map((slot, index) => 
+                slotTemplate.replace(/\{\{@index\}\}/g, index + 1)
+                           .replace(/\{\{this\.info\}\}/g, slot.info)
+                           .replace(/\{\{this\.exists\}\}/g, slot.exists ? '' : 'style="display:none"')
+            ).join('');
+        });
+    }
+    
+    return content;
 }
  
 // Set up event listeners
 function setupEventListeners() {
     // Sidebar buttons
-    characterButton.addEventListener('click', displayCharacter);
-    journalButton.addEventListener('click', displayJournal);
-    achievementsButton.addEventListener('click', displayAchievements);
-    savesButton.addEventListener('click', displaySaves);
-    settingsButton.addEventListener('click', displaySettings);
+    characterButton.addEventListener('click', () => displaySystemScreen('character_screen'));
+    journalButton.addEventListener('click', () => displaySystemScreen('journal_screen'));
+    achievementsButton.addEventListener('click', () => displaySystemScreen('achievements_screen'));
+    savesButton.addEventListener('click', () => displaySystemScreen('saves_screen'));
+    settingsButton.addEventListener('click', () => displaySystemScreen('settings_screen'));
     restartButton.addEventListener('click', confirmRestart);
 }
  
