@@ -22,7 +22,7 @@
     },
     "saves_screen": {
         "title": "Save Game",
-        "content": "{{#each saveSlots}}\n    <div class=\"save-slot\">\n        <div>\n            <strong>Slot {{@index}}</strong><br>\n            {{this.info}}\n        </div>\n        <div>\n            <button class=\"save-slot-button\" data-action=\"save\" data-slot=\"{{@index}}\">Save</button>\n            {{#if this.exists}}\n                <button class=\"save-slot-button\" data-action=\"load\" data-slot=\"{{@index}}\">Load</button>\n            {{/if}}\n        </div>\n    </div>\n{{/each}}",
+        "content": "{{#each saveSlots}}\n    <div class=\"save-slot\">\n        <div>\n            <strong>Slot {{@index}}</strong><br>\n            {{this.info}}\n        </div>\n        <div>\n            <button class=\"save-slot-button\" data-action=\"save\" data-slot=\"{{@index}}\">Save</button>\n                 <button class=\"save-slot-button\" data-action=\"load\" data-slot=\"{{@index}}\">Load</button>\n            {{/if}}\n        </div>\n    </div>\n{{/each}}",
         "choices": [
             { "text": "Return to Game", "action": "backToGame" }
         ]
