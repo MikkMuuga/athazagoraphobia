@@ -368,7 +368,6 @@ function setupEventListeners() {
         }
     });
     
-    playButton.addEventListener('click', returnToGame);
     restartButton.addEventListener('click', confirmRestart);
 }
 // Confirm restart
