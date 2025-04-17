@@ -63,6 +63,7 @@ body {
     text-align: center;
 }
 
+
 .nav-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
@@ -263,4 +264,28 @@ body {
 .save-slot-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: var(--accent-color);
+}
+/* Add this to your CSS file */
+#Play-button {
+    background-color: var(--accent-color);
+    color: #1a1e27; /* Dark text on light background for contrast */
+    font-weight: bold;
+    font-size: 1.1em;
+    padding: 15px 20px;
+    margin: 10px 20px; /* Add margin to separate it from other buttons */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+    transition: transform 0.2s, background-color 0.2s; /* Smooth hover effect */
+    border: none; /* Remove border */
+    text-align: center;
+    letter-spacing: 1px; /* Spacing between letters */
+}
+
+#Play-button:hover {
+    background-color: #ffdaaf; /* Lighter shade on hover */
+    transform: translateY(-2px); /* Slight rise effect */
+}
+
+#Play-button:active {
+    transform: translateY(1px); /* Press down effect */
 }
