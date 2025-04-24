@@ -474,25 +474,3 @@ function unlockAchievement(achievement) {
  
 // Start the game when the page loads
 window.addEventListener('load', initGame);
-
-function returnToGame() {
-    try {
-        // Check if we have a valid current scene
-        if (gameState.currentChapter && gameState.currentScene) {
-            const sceneKey = `${gameState.currentChapter}:${gameState.currentScene}`;
-            
-            // Verify the scene exists in cache
-            if (sceneCache[gameState.currentChapter] && 
-                sceneCache[gameState.currentChapter][gameState.currentScene]) {
-                displayScene(sceneKey);
-                return;
-            }
-        }
-        
-        // Fallback to intro if anything goes wrong
-        displayScene('intro');
-    } catch (error) {
-        console.error("Error returning to game:", error);
-        displayScene('intro');
-    }
-}
