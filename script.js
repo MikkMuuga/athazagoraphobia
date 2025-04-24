@@ -17,7 +17,8 @@ const gameState = {
     achievements: [],
     visitedScenes: new Set(),
     flags: {},
-    systemScreens: {}
+    systemScreens: {},
+    error: null
 };
 
 // Scene cache
@@ -47,14 +48,19 @@ async function loadSystemScreens() {
 
 // Initialize the game
 async function initGame() {
-    await loadSystemScreens(); // Add this line
-    // Preload the first chapter then display the scene
-    loadChapter('chapter1').then(() => {
+    try {
+        await loadSystemScreens();
+        await loadChapter('chapter1');
         displayScene('intro');
-    }).catch(error => {
-        console.error("Failed to load initial chapter:", error);
-        contentArea.innerHTML = "<p>Error loading game content. Please refresh the page.</p>";
-    });
+    } catch (error) {
+        console.error("Failed to initialize game:", error);
+        gameState.error = error;
+        contentArea.innerHTML = `
+            <p>Error initializing game. Please refresh the page.</p>
+            <button class="choice-button" onclick="location.reload()">Refresh Page</button>
+        `;
+        return;
+    }
     
     setupEventListeners();
 }
@@ -126,7 +132,14 @@ async function displayScene(sceneId) {
         }
         
         // Add scene content
-        let sceneContent = typeof scene.content === 'function' ? scene.content() : scene.content;
+        let sceneContent;
+        if (Array.isArray(scene.content)) {
+            // Handle array of content paragraphs
+            sceneContent = scene.content.join('\n');
+        } else {
+            // Handle regular string or function content
+            sceneContent = typeof scene.content === 'function' ? scene.content() : scene.content;
+        }
         sceneContent = processContentTemplate(sceneContent);
         content += sceneContent;
         
@@ -189,8 +202,11 @@ async function displayScene(sceneId) {
                         }
                         await displayScene(nextScene);
                     } catch (error) {
-                        console.error("Error transitioning to next scene:", error);
-                        contentArea.innerHTML = "<p>Error loading next scene. Please try again.</p>";
+                        console.error("Error displaying scene:", error);
+                        contentArea.innerHTML = `
+                            <p>Error loading game content.</p>
+                            <button class="choice-button" onclick="confirmRestart(true)">Restart Game</button>
+                        `;
                     }
                 }
             });
@@ -353,38 +369,57 @@ function processSystemContent(template, screenId) {
  
 
 function setupEventListeners() {
-    // Sidebar buttons
-    characterButton.addEventListener('click', () => displaySystemScreen('character_screen'));
-    journalButton.addEventListener('click', () => displaySystemScreen('journal_screen'));
-    achievementsButton.addEventListener('click', () => displaySystemScreen('achievements_screen'));
-    savesButton.addEventListener('click', () => displaySystemScreen('saves_screen'));
-    settingsButton.addEventListener('click', () => displaySystemScreen('settings_screen'));
-    playButton.addEventListener('click', () => {
+    // Only add listeners if elements exist
+    if (characterButton) characterButton.addEventListener('click', () => displaySystemScreen('character_screen'));
+    if (journalButton) journalButton.addEventListener('click', () => displaySystemScreen('journal_screen'));
+    if (achievementsButton) achievementsButton.addEventListener('click', () => displaySystemScreen('achievements_screen'));
+    if (savesButton) savesButton.addEventListener('click', () => displaySystemScreen('saves_screen'));
+    if (settingsButton) settingsButton.addEventListener('click', () => displaySystemScreen('settings_screen'));
+    if (playButton) playButton.addEventListener('click', () => {
         if (gameState.currentScene) {
             displayScene(`${gameState.currentChapter}:${gameState.currentScene}`);
         } else {
-            // Fallback to intro if no current scene is set
             displayScene('intro');
         }
     });
     
-    restartButton.addEventListener('click', confirmRestart);
+    if (restartButton) restartButton.addEventListener('click', confirmRestart);
 }
+
+function showRestartOptions() {
+    const options = `
+        <div class="restart-options">
+            <h3>Restart Options</h3>
+            <button class="choice-button" onclick="confirmRestart(true)">Full Restart (Reset Everything)</button>
+            <button class="choice-button" onclick="confirmRestart(false)">Quick Restart (Keep Character)</button>
+            <button class="choice-button" onclick="displayScene(gameState.currentScene)">Cancel</button>
+        </div>
+    `;
+    
+    contentArea.innerHTML = options;
+}
+
 // Confirm restart
 function confirmRestart() {
-    if (confirm('Are you sure you want to restart the game? All progress will be lost.')) {
-        // Store name and gender temporarily
-        const playerName = gameState.character.name;
-        const playerGender = gameState.character.gender;
-        
-        // Reset game state
-        gameState.currentChapter = 'chapter1';
-        gameState.currentScene = 'intro'; // First set to intro
-        gameState.visitedScenes = new Set();
-        gameState.flags = {};
+    const restartChoice = confirm(`Restart options:\n\nClick OK for full restart (back to intro)\nClick Cancel for quick restart (keep character)`);
+    
+    if (restartChoice === null) return; // User clicked cancel on the confirmation
+    
+    // Store name and gender temporarily if doing quick restart
+    const playerName = gameState.character.name;
+    const playerGender = gameState.character.gender;
+    
+    // Reset game state
+    gameState.currentChapter = 'chapter1';
+    gameState.visitedScenes = new Set();
+    gameState.flags = {};
+    
+    if (restartChoice) {
+        // Full restart - reset everything
+        gameState.currentScene = 'intro';
         gameState.character = {
-            name: playerName, // Preserve player name
-            gender: playerGender, // Preserve player gender
+            name: '',
+            gender: '',
             stats: {
                 strength: 10,
                 agility: 10,
@@ -393,66 +428,115 @@ function confirmRestart() {
             },
             inventory: []
         };
-        gameState.journal = [];
-        
-        try {
-            // Ensure the chapter is loaded before trying to display the scene
-            loadChapter('chapter1')
-                .then(() => {
-                    // If character has a name, we'll assume they've completed setup
-                    // and should skip to the first story scene
-                    if (playerName && playerName.trim() !== '') {
-                        // Try to load the first story scene
-                        // This could be 'self_focus_complete' or another scene that starts the actual story
-                        const firstStoryScene = 'self_focus_complete'; 
-                        
-                        // Check if the scene exists in chapter1
-                        if (sceneCache['chapter1'] && sceneCache['chapter1'][firstStoryScene]) {
-                            displayScene(firstStoryScene);
-                        } else {
-                            // If scene doesn't exist, fall back to intro
-                            displayScene('intro');
-                        }
-                    } else {
-                        // If no name is set, start from the very beginning
-                        displayScene('intro');
-                    }
-                })
-                .catch(error => {
-                    console.error("Failed to load chapter during restart:", error);
-                    // Fallback to a safe display if chapter loading fails
-                    contentArea.innerHTML = `
-                        <p>Error restarting game. Please refresh the page.</p>
-                        <button class="choice-button" onclick="location.reload()">Refresh Page</button>
-                    `;
-                });
-        } catch (error) {
-            console.error("Error in restart process:", error);
-            contentArea.innerHTML = `
-                <p>Error restarting game. Please refresh the page.</p>
-                <button class="choice-button" onclick="location.reload()">Refresh Page</button>
-            `;
-        }
+    } else {
+        // Quick restart - keep character but reset progress
+        gameState.currentScene = 'self_focus_complete';
+        gameState.character = {
+            name: playerName,
+            gender: playerGender,
+            stats: {
+                strength: 10,
+                agility: 10,
+                intelligence: 10,
+                charisma: 10
+            },
+            inventory: []
+        };
+    }
+    
+    gameState.journal = [];
+    gameState.achievements = [];
+    
+    try {
+        // Always load chapter1 for restart
+        loadChapter('chapter1')
+            .then(() => {
+                displayScene(gameState.currentScene);
+            })
+            .catch(error => {
+                console.error("Failed to load chapter during restart:", error);
+                contentArea.innerHTML = `
+                    <p>Error restarting game. Please refresh the page.</p>
+                    <button class="choice-button" onclick="location.reload()">Refresh Page</button>
+                `;
+            });
+    } catch (error) {
+        console.error("Error in restart process:", error);
+        contentArea.innerHTML = `
+            <p>Error restarting game. Please refresh the page.</p>
+            <button class="choice-button" onclick="location.reload()">Refresh Page</button>
+        `;
     }
 }
  
 // Save game
 function saveGame(slotId) {
-    const saveData = JSON.stringify(gameState);
+    // Convert Set to Array for JSON serialization
+    const saveData = JSON.stringify({
+        ...gameState,
+        visitedScenes: [...gameState.visitedScenes]
+    });
+    
     localStorage.setItem(`athazagoraphobia_save_${slotId}`, saveData);
     alert(`Game saved to slot ${slotId}`);
-    displaySaves(); // Refresh the saves screen
+    displaySystemScreen('saves_screen');
 }
- 
+
 // Load game
 function loadGame(slotId) {
-    const saveData = localStorage.getItem(`athazagoraphobia_save_${slotId}`);
-    if (saveData) {
-        Object.assign(gameState, JSON.parse(saveData));
-        displayScene(gameState.currentScene);
-        alert(`Game loaded from slot ${slotId}`);
-    } else {
-        alert(`No save data found in slot ${slotId}`);
+    try {
+        const saveData = localStorage.getItem(`athazagoraphobia_save_${slotId}`);
+        if (!saveData) {
+            alert(`No save data found in slot ${slotId}`);
+            return;
+        }
+
+        const loadedData = JSON.parse(saveData);
+        
+        // Validate save data
+        if (!loadedData.currentChapter || !loadedData.currentScene) {
+            throw new Error('Invalid save data - missing chapter/scene information');
+        }
+
+        // Convert visitedScenes array back to Set
+        const visitedScenes = Array.isArray(loadedData.visitedScenes) 
+            ? new Set(loadedData.visitedScenes) 
+            : new Set();
+
+        // Preserve system screens if they exist
+        const systemScreens = loadedData.systemScreens || {};
+        
+        // Reset game state while preserving some system data
+        Object.assign(gameState, {
+            currentChapter: loadedData.currentChapter,
+            currentScene: loadedData.currentScene,
+            character: loadedData.character || {
+                name: '',
+                gender: '',
+                stats: { strength: 10, agility: 10, intelligence: 10, charisma: 10 },
+                inventory: []
+            },
+            journal: loadedData.journal || [],
+            achievements: loadedData.achievements || [],
+            visitedScenes,
+            flags: loadedData.flags || {},
+            systemScreens
+        });
+
+        // Load the chapter and display the scene
+        loadChapter(gameState.currentChapter)
+            .then(() => displayScene(`${gameState.currentChapter}:${gameState.currentScene}`))
+            .catch(error => {
+                console.error('Error loading chapter:', error);
+                // Fallback to intro if chapter loading fails
+                gameState.currentChapter = 'chapter1';
+                gameState.currentScene = 'intro';
+                displayScene('intro');
+            });
+            
+    } catch (error) {
+        console.error('Error loading game:', error);
+        alert('Failed to load saved game. The save file may be corrupted.');
     }
 }
  

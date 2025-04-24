@@ -1,11 +1,15 @@
 {
     "intro": {
         "title": "",
-        "content": "<p class=\"story-paragraph\">Welcome to Athazagoraphobia, a text-based adventure game about memory, fear, and the unknown.</p>\n<p class=\"story-paragraph\">You will navigate through a mysterious world, uncovering secrets about yourself and your past. Make choices carefully, as they will affect your journey.</p>",
+        "content": [
+		    "<p class=\"story-paragraph\">Welcome to Athazagoraphobia, a text-based adventure game about memory, fear, and the unknown.</p>",
+	        "<p class=\"story-paragraph\">You will navigate through a mysterious world, uncovering secrets about yourself and your past. Make choices carefully, as they will affect your journey.</p>"
+		 ],
         "choices": [
             { "text": "You open your eyes.", "nextScene": "awaken" }
         ]
     },
+
     "awaken": {
         "title": "CHAPTER 1",
         "content": "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>\n<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>\n<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>",
@@ -22,7 +26,7 @@
     },
     "self_focus": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">Your name is: <input type=\"text\" id=\"player-name\" class=\"name-input\"><button id=\"name-submit\" class=\"choice-button\" style=\"display:inline-block; padding:5px 10px;\">Enter</button></p>",
+        "content": "<p class=\"story-paragraph\">Your name is: <input type=\"text\" id=\"player-name\" class=\"name-input\" autocomplete=\"off\"><button id=\"name-submit\" class=\"choice-button\" style=\"display:inline-block; padding:5px 10px;\">Enter</button></p>",
         "noChoices": true
     },
     "self_focus_gender": {
