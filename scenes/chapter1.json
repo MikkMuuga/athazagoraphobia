@@ -12,14 +12,22 @@
 
     "awaken": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>\n<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>\n<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>",
+            "<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>\n<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>"
+        ],
         "choices": [
             { "text": "Try to focus on remembering", "nextScene": "remember_attempt" }
         ]
     },
     "remember_attempt": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>\n<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>\n<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>\n<p class=\"story-paragraph\">You try to remember what happened, but all you can see is a bright flash of light. Despite your best efforts, you struggle to remember even the faintest of details.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>",
+            "<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>",
+            "<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>",
+            "<p class=\"story-paragraph\">You try to remember what happened, but all you can see is a bright flash of light. Despite your best efforts, you struggle to remember even the faintest of details.</p>"
+        ],
         "choices": [
             { "text": "Focus on yourself", "nextScene": "self_focus" }
         ]
@@ -42,8 +50,21 @@
         ]
     },
     "wolves_1_1": {
+        "name": "Wolf Encounter",
         "title": "CHAPTER 1",
         "content": "<p class=\"story-paragraph\">As you struggle to your feet, three wolves emerge from the bushes. Their eyes gleam with hunger as they slowly circle around you, cutting off any escape route.</p>\n<p class=\"story-paragraph\">Your muscles ache and your head feels light. These wolves must have smelled the death around you and came for an easy meal. Unfortunately for them, not everyone here is dead yet.</p>\n<p class=\"story-paragraph\">You need to act quickly. The wolves are getting closer, their growls growing louder by the second.</p>",
+        "journal": [
+            {
+                "category": "Main Entries",
+                "title": "Awakening",
+                "content": "I've awoken in a forest surrounded by the remains of what seems to be my former companions. My memory is fragmented - I can't recall how we got here or what happened to them. My head pounds with each heartbeat, and my body feels weak, as if I've been unconscious for days. Whatever happened here, I appear to be the sole survivor."
+            },
+            {
+                "category": "Locations",
+                "title": "Lyrewood Forest",
+                "content": "Dense ancient woods with a golden canopy of leaves. The forest floor is covered in moss and fallen leaves, muffling sound. The air is chill and damp, carrying the scent of decay and wood. These woods seem largely untouched by civilization, wild and primeval."
+            }
+        ],
         "choices": [
             { "text": "Look for a weapon", "nextScene": "wolves_weapon" },
             { "text": "Try to intimidate the wolves", "nextScene": "wolves_intimidate" },
@@ -51,8 +72,13 @@
         ]
     },
     "wolves_weapon": {
+        "name": "First Battle",
         "title": "CHAPTER 1",
         "content": "<p class=\"story-paragraph\">You quickly scan the area for a weapon. Your eyes land on a rusty sword lying near one of the skeletons. You grab it just as the wolves pounce.</p>\n<p class=\"story-paragraph\">The battle is intense, but with your newfound weapon, you manage to fend off the wolves. They retreat into the forest, but you know they might return.</p>",
+        "achievement": {
+            "title": "The Swordsman",
+            "description": "You picked the sword as your weapon of choice."
+        },
         "choices": [
             { "text": "Continue your journey", "nextScene": "chapter2:demo_scene", "chapterTransition": true }
         ]

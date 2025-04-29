@@ -289,3 +289,215 @@ body {
 #Play-button:active {
     transform: translateY(1px); /* Press down effect */
 }
+
+/* Notification system */
+.game-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    max-width: 300px;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--text-color);
+    border-left: 4px solid var(--accent-color);
+    padding: 0;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.game-notification.visible {
+    transform: translateX(0);
+}
+
+.notification-content {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-message {
+    flex-grow: 1;
+    padding-right: 10px;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.notification-close:hover {
+    color: #fff;
+}
+
+/* Notification types */
+.game-notification.success {
+    border-left-color: #4CAF50;
+}
+
+.game-notification.error {
+    border-left-color: #f44336;
+}
+
+.game-notification.achievement {
+    border-left-color: #FFD700;
+}
+
+/* Dialog system */
+.game-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.game-dialog.visible {
+    opacity: 1;
+}
+
+.dialog-content {
+    background-color: var(--side-bg-color);
+    border: 1px solid var(--divider-color);
+    border-top: 3px solid var(--accent-color);
+    padding: 20px;
+    min-width: 300px;
+    max-width: 500px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.game-dialog.visible .dialog-content {
+    transform: translateY(0);
+}
+
+.dialog-title {
+    color: var(--header-color);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.dialog-message {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.dialog-button {
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    border: 1px solid var(--divider-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dialog-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+}
+
+.dialog-button.confirm-button {
+    background-color: var(--accent-color);
+    color: #1a1e27;
+}
+
+.dialog-button.confirm-button:hover {
+    background-color: #d6a968;
+}
+
+.dialog-button.confirm-button:hover {
+    background-color: #d6a968;
+}
+
+/* Journal styles */
+.journal-category {
+    margin-bottom: 25px;
+}
+
+.journal-entry-button {
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    overflow: hidden;
+}
+
+.journal-entry-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.journal-entry-marker {
+    width: 4px;
+    background-color: silver;
+    margin-right: 10px;
+}
+
+.journal-entry-preview {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+.journal-entry-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.journal-entry-timestamp {
+    font-size: 0.8em;
+    color: var(--accent-color);
+}
+
+.journal-paragraph {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+/* Achievement styles */
+.achievement-item {
+    display: flex;
+    margin-bottom: 15px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.achievement-marker {
+    width: 6px;
+    background-color: gold;
+}
+
+.achievement-content {
+    padding: 12px;
+    flex-grow: 1;
+}
+
+.achievement-title {
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 5px;
+}
+
+.achievement-description {
+    font-size: 0.9em;
+}

@@ -8,21 +8,21 @@
     },
     "journal_screen": {
         "title": "Journal",
-        "content": "{{#if journal.length}}\n    {{#each journal}}\n        <div style=\"margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-color);\">\n            <p class=\"story-paragraph\">{{this.text}}</p>\n            <p style=\"font-size: 0.8em; color: var(--accent-color);\">{{this.timestamp}}</p>\n        </div>\n    {{/each}}\n{{else}}\n    <p class=\"story-paragraph\">Your journal is empty. Notes will appear here as you discover important information.</p>\n{{/if}}",
+        "content": "{{#if journalCategories.length}}\n    {{#each journalCategories}}\n        <h2 style=\"margin-top: 20px; color: var(--header-color); font-size: 1.3em;\">{{this}}</h2>\n        <div class=\"journal-category\">\n            {{#each (lookup ../journalByCategory this)}}\n                <div class=\"journal-entry-button\" data-category=\"{{../this}}\" data-entry-key=\"{{@key}}\">\n                    <div style=\"display: flex;\">\n                        <div class=\"journal-entry-marker\"></div>\n                        <div class=\"journal-entry-preview\">\n                            <p class=\"journal-entry-title\">{{this.title}}</p>\n                            <p class=\"journal-entry-timestamp\">{{this.timestamp}}</p>\n                        </div>\n                    </div>\n                </div>\n            {{/each}}\n        </div>\n    {{/each}}\n{{else}}\n    <p class=\"story-paragraph\">Your journal is empty. Notes will appear here as you discover important information.</p>\n{{/if}}\n\n<!-- Journal entry detail view (hidden by default) -->\n<div id=\"journal-detail-view\" style=\"display: none;\">\n    <h2 id=\"journal-detail-title\" style=\"color: var(--header-color);\"></h2>\n    <div id=\"journal-detail-content\"></div>\n    <p id=\"journal-detail-timestamp\" style=\"font-size: 0.8em; color: var(--accent-color);\"></p>\n    <button class=\"choice-button\" id=\"back-to-journal-list\">Back to Journal List</button>\n</div>",
         "choices": [
             { "text": "Return to Game", "action": "backToGame" }
         ]
     },
     "achievements_screen": {
         "title": "Achievements",
-        "content": "{{#if achievements.length}}\n    {{#each achievements}}\n        <div style=\"margin-bottom: 15px; padding: 10px; background-color: rgba(255, 255, 255, 0.05); border-radius: 4px;\">\n            <p style=\"font-weight: bold; color: var(--accent-color);\">{{this}}</p>\n        </div>\n    {{/each}}\n{{else}}\n    <p class=\"story-paragraph\">No achievements unlocked yet. Explore the world to discover achievements.</p>\n{{/if}}",
+        "content": "{{#if achievements.length}}\n    {{#each achievements}}\n        <div class=\"achievement-item\">\n            <div class=\"achievement-marker\"></div>\n            <div class=\"achievement-content\">\n                <p class=\"achievement-title\">{{this.title}}</p>\n                <p class=\"achievement-description\">{{this.description}}</p>\n            </div>\n        </div>\n    {{/each}}\n{{else}}\n    <p class=\"story-paragraph\">No achievements unlocked yet. Explore the world to discover achievements.</p>\n{{/if}}",
         "choices": [
             { "text": "Return to Game", "action": "backToGame" }
         ]
     },
     "saves_screen": {
         "title": "Save Game",
-        "content": "{{#each saveSlots}}\n    <div class=\"save-slot\">\n        <div>\n            <strong>Slot {{@index}}</strong><br>\n            {{this.info}}\n        </div>\n        <div>\n            <button class=\"save-slot-button\" data-action=\"save\" data-slot=\"{{@index}}\">Save</button>\n                 <button class=\"save-slot-button\" data-action=\"load\" data-slot=\"{{@index}}\">Load</button>\n            {{/if}}\n        </div>\n    </div>\n{{/each}}",
+        "content": "{{#each saveSlots}}\n    <div class=\"save-slot\">\n        <div>\n            <strong>Slot {{@index}}</strong><br>\n            {{this.info}}\n        </div>\n        <div>\n            <button class=\"save-slot-button\" data-action=\"save\" data-slot=\"{{@index}}\">Save</button>\n            {{#if this.exists}}\n                <button class=\"save-slot-button\" data-action=\"load\" data-slot=\"{{@index}}\">Load</button>\n            {{/if}}\n        </div>\n    </div>\n{{/each}}",
         "choices": [
             { "text": "Return to Game", "action": "backToGame" }
         ]
