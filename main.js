@@ -18,7 +18,7 @@ const gameState = {
     visitedScenes: new Set(),
     flags: {},
     systemScreens: {},
-    error: null
+    error: null,
 };
 
 // Notification system
@@ -251,6 +251,11 @@ function processContentTemplate(content) {
 
 // Display a scene
 async function displayScene(sceneId) {
+    if (sceneId.startsWith('fight:')) {
+        const fightId = sceneId.split(':')[1];
+        startCombat(fightId);
+        return;
+    }
     try {
         // Check if sceneId contains chapter information (format: "chapter:scene")
         let [chapterId, actualSceneId] = sceneId.includes(':') ? 
@@ -937,6 +942,48 @@ function processSceneAchievements(scene) {
     if (scene.achievement) {
         unlockAchievement(scene.achievement.title, scene.achievement.description);
     }
+}
+
+function loadFightSystem() {
+    return new Promise((resolve, reject) => {
+        if (window.initializeCombat) {
+            // Fight system already loaded
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'fight.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load fight.js'));
+        document.head.appendChild(script);
+    });
+}
+
+function startCombat(fightId) {
+    console.log("Starting combat with fight ID:", fightId);
+    
+    // Load the fight data
+    fetch(`fight/fights.json`)
+        .then(response => response.json())
+        .then(fights => {
+            const fight = fights[fightId];
+            if (!fight) {
+                console.error(`Fight with ID ${fightId} not found!`);
+                return;
+            }
+            
+            console.log("Fight data loaded:", fight);
+            
+            // Initialize combat state
+            initiateCombat(fight);
+            
+            // Display combat UI
+            displayCombatUI();
+        })
+        .catch(error => {
+            console.error('Error loading fight data:', error);
+        });
 }
 
 // Start the game when the page loads

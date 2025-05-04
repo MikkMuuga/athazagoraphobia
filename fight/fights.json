@@ -1,0 +1,41 @@
+{
+    "wolves_fight": {
+      "id": "wolves_fight",
+      "name": "Wolf Pack Attack",
+      "description": "A pack of wolves surrounds you in the forest.",
+      "enemy": {
+        "name": "Wolf Pack",
+        "description": "A group of hungry wolves with sharp teeth and claws.",
+        "maxHealth": 30,
+        "currentHealth": 30,
+        "focus": 4,
+        "difficulty": "normal",
+        "damageMultiplier": 1.0,
+        "attackDeck": [
+          "daggers_normal_1_1", "daggers_fire_1_1", 
+          "daggers_fire_1_2", "daggers_thunder_1_1"
+        ],
+        "actionDeck": ["heal_1", "focus_1"]
+      },
+      "player": {
+        "maxHealth": 100,
+        "damageMultiplier": 1.0,
+        "attackDeck": [
+          "sword_fire_1_1", "sword_fire_1_2", 
+          "sword_water_1_1", "sword_water_1_2",
+          "sword_thunder_1_1", "sword_thunder_1_2",
+          "sword_light_1_1", "sword_light_1_2",
+          "sword_dark_1_1", "sword_dark_1_2",
+          "sword_normal_1_1", "sword_normal_1_2",
+          "sword_normal_1_3", "sword_normal_1_4"
+        ],
+        "actionDeck": ["heal_1", "defend_1", "focus_1", "reflect_1", "analyze_1"]
+      },
+      "rewards": {
+        "experience": 25,
+        "items": ["wolf_pelt"]
+      },
+      "nextSceneId": "wolves_weapon"
+    }
+  }
+  

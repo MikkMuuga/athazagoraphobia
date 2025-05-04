@@ -500,3 +500,597 @@ body {
 .achievement-description {
     font-size: 0.9em;
 }
+
+/* Expand combat UI to use more space */
+#content-area.combat-active {
+    padding: 5px !important; /* Override the default padding */
+    max-width: none !important; /* Remove any max-width constraints */
+    width: calc(100% - 10px) !important; /* Use almost all available width */
+    margin: 0 !important; /* Remove any margins */
+}
+
+#combat-container {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Make sure cards don't get too small on smaller screens */
+@media (max-width: 1200px) {
+    .card {
+        width: 100px;
+        height: 150px;
+        font-size: 0.8em;
+    }
+}
+
+/* Add to your style.css file */
+.selected-play {
+    outline: 3px solid white;
+    box-shadow: 0 0 10px white;
+}
+
+.selected-discard {
+    outline: 3px solid red;
+    box-shadow: 0 0 10px red;
+}
+
+.focus-cost-exceeded {
+    color: red;
+    font-weight: bold;
+}
+
+#focus-cost-display {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+
+.card-divider {
+    width: 100%;
+    height: 20px;
+    margin: 10px 0;
+    border-bottom: 1px dashed #aaa;
+}
+
+.attack-card {
+    border-color: #d44;
+}
+
+.action-card {
+    border-color: #44d;
+}
+
+.card-hand {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.card {
+    width: 120px;
+    height: 180px;
+    border: 2px solid #888;
+    border-radius: 10px;
+    padding: 8px;
+    background-color: #222;
+    color: white;
+    font-size: 0.9em;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+}
+
+.card-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+.card-description {
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    height: 50px;
+    overflow: hidden;
+}
+
+.card-cost, .card-damage, .card-effect {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.card-fire {
+    border-color: #f44;
+    background: linear-gradient(to bottom, #422, #211);
+}
+
+.card-water {
+    border-color: #44f;
+    background: linear-gradient(to bottom, #224, #112);
+}
+
+.card-thunder {
+    border-color: #ff4;
+    background: linear-gradient(to bottom, #442, #221);
+}
+
+.card-light {
+    border-color: #fff;
+    background: linear-gradient(to bottom, #444, #222);
+}
+
+.card-dark {
+    border-color: #a4a;
+    background: linear-gradient(to bottom, #424, #212);
+}
+
+.card-normal {
+    border-color: #888;
+    background: linear-gradient(to bottom, #333, #222);
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+}
+
+.card.selected {
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    transform: translateY(-10px); /* Stay elevated when selected */
+}
+
+.card.discard {
+    border-color: #f44;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
+    transform: translateY(5px); /* Move slightly down when discarded */
+    opacity: 0.8;
+}
+
+.card-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+.card-description {
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    height: 50px;
+    overflow: hidden;
+}
+
+.card-cost, .card-damage, .card-effect {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Combat UI layout */
+#combat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+
+#enemy-area {
+    margin-bottom: 20px;
+}
+
+#combat-field {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 200px;
+    margin-bottom: 20px;
+}
+
+#player-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-info {
+    margin-bottom: 10px;
+}
+
+.health-bar, .focus-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #333;
+    border-radius: 5px;
+    margin: 5px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    background-color: #f44;
+    transition: width 0.3s ease;
+}
+
+.focus-fill {
+    height: 100%;
+    background-color: #44f;
+    transition: width 0.3s ease;
+}
+
+.health-bar span, .focus-bar span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+}
+
+/* Card hand layout - horizontal line */
+.card-hand {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 10px 0;
+    margin-top: 10px;
+}
+
+/* Vertical divider between attack and action cards */
+.card-divider {
+    width: 2px;
+    height: 180px;
+    background-color: #555;
+    margin: 0 15px;
+    display: inline-block;
+}
+
+/* Combat controls */
+.combat-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+#end-turn-btn {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #44f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#end-turn-btn:hover {
+    background-color: #55f;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+#end-turn-btn:active {
+    background-color: #33d;
+    transform: translateY(2px);
+}
+
+#focus-cost-display {
+    text-align: center;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+/* Combat messages */
+#combat-messages {
+    max-height: 150px;
+    overflow-y: auto;
+    margin: 10px 0;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.combat-message {
+    padding: 5px;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+/* Expand combat UI to use more space */
+#content-area.combat-active {
+    padding: 5px !important; /* Override the default padding */
+    max-width: none !important; /* Remove any max-width constraints */
+    width: calc(100% - 10px) !important; /* Use almost all available width */
+    margin: 0 !important; /* Remove any margins */
+    overflow: hidden !important; /* Prevent scrollbars */
+}
+
+#combat-container {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+/* Improved card styling with better scaling */
+.card {
+    width: 10vw; /* Use viewport width for responsive sizing */
+    min-width: 80px; /* Minimum size */
+    max-width: 120px; /* Maximum size */
+    height: auto; /* Allow height to adjust */
+    aspect-ratio: 2/3; /* Maintain card proportions */
+    border: 2px solid #888;
+    border-radius: 10px;
+    padding: 8px;
+    background-color: #222;
+    color: white;
+    font-size: clamp(0.7rem, 0.9vw, 0.9rem); /* Responsive font size */
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin: 5px;
+    display: inline-block;
+    vertical-align: top;
+    overflow: hidden; /* Prevent text overflow */
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+    z-index: 10; /* Ensure hovering cards appear above others */
+}
+
+.card.selected {
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    transform: translateY(-10px); /* Stay elevated when selected */
+    z-index: 5; /* Ensure selected cards appear above non-selected */
+}
+
+.card.discard {
+    border-color: #f44;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
+    transform: translateY(5px); /* Move slightly down when discarded */
+    opacity: 0.8;
+    z-index: 5;
+}
+
+.card-name {
+    font-weight: bold;
+    font-size: 1em;
+    margin-bottom: 5px;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-description {
+    font-size: 0.85em;
+    margin-bottom: 8px;
+    max-height: 40%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.card-cost, .card-damage, .card-effect {
+    font-size: 0.85em;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Card hand layout - horizontal line without scrollbar */
+.card-hand {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap; /* Prevent wrapping to keep single line */
+    padding: 10px 0;
+    margin-top: 10px;
+    width: 100%;
+    overflow: visible; /* Allow cards to be visible even if they overflow */
+}
+
+/* Vertical divider between attack and action cards */
+.card-divider {
+    width: 2px;
+    height: 80%; /* Relative height */
+    background-color: #555;
+    margin: 0 10px;
+    display: inline-block;
+    align-self: center;
+}
+
+/* Combat UI layout */
+#combat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+
+#enemy-area {
+    margin-bottom: 10px;
+}
+
+#combat-field {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align to top */
+    min-height: 100px;
+    margin-bottom: 20px;
+}
+
+#combat-messages {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    margin-top: 5px;
+    height: auto;
+    overflow: hidden; /* Prevent scrolling */
+}
+
+.combat-message {
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+#player-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-info {
+    margin-bottom: 10px;
+}
+
+.health-bar, .focus-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #333;
+    border-radius: 5px;
+    margin: 5px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    background-color: #f44;
+    transition: width 0.3s ease;
+}
+
+.focus-fill {
+    height: 100%;
+    background-color: #44f;
+    transition: width 0.3s ease;
+}
+
+.health-bar span, .focus-bar span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+}
+
+/* Combat controls */
+.combat-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+#end-turn-btn {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #44f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#end-turn-btn:hover {
+    background-color: #55f;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+    transform: translateY(-2px);
+}
+
+#end-turn-btn:active {
+    background-color: #33d;
+    transform: translateY(1px);
+}
+
+#focus-cost-display {
+    text-align: center;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+/* Card color variations */
+.card-normal {
+    background: linear-gradient(135deg, #333, #222);
+}
+
+.card-fire {
+    background: linear-gradient(135deg, #722, #411);
+    border-color: #933;
+}
+
+.card-ice {
+    background: linear-gradient(135deg, #249, #124);
+    border-color: #35a;
+}
+
+.card-lightning {
+    background: linear-gradient(135deg, #762, #431);
+    border-color: #983;
+}
+
+.card-earth {
+    background: linear-gradient(135deg, #563, #342);
+    border-color: #684;
+}
+
+.card-wind {
+    background: linear-gradient(135deg, #599, #366);
+    border-color: #6aa;
+}
+
+.card-action {
+    background: linear-gradient(135deg, #539, #316);
+    border-color: #64a;
+}
+
+/* Add a subtle inner shadow to cards for depth */
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.1), 
+                inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}

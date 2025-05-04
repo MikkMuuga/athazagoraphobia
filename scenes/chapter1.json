@@ -57,10 +57,10 @@
             "<p class=\"story-paragraph\">You hear something moving in the bushes nearby.</p>"
         ],
         "choices": [
-            { "text": "Stand up", "nextScene": "wolves_1_1" }
+            { "text": "Stand up", "nextScene": "wolves_1" }
         ]
     },
-    "wolves_1_1": {
+    "wolves_1": {
         "name": "Wolf Encounter",
         "title": "CHAPTER 1",
         "content": [
@@ -81,7 +81,7 @@
             }
         ],
         "choices": [
-            { "text": "Look for a weapon", "nextScene": "wolves_weapon" },
+            { "text": "Look for a weapon", "nextScene": "fight:wolves_fight" },
             { "text": "Try to intimidate the wolves", "nextScene": "wolves_intimidate" },
             { "text": "Attempt to flee", "nextScene": "wolves_flee" }
         ]

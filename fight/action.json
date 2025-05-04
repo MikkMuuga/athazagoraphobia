@@ -1,0 +1,83 @@
+[
+    {
+      "id": "heal_1",
+      "name": "Healing Potion",
+      "description": "Restore 20% of your maximum health.",
+      "focus_cost": 2,
+      "effect_type": "heal",
+      "effect_value": 0.2,
+      "effect_description": "Heals 20% of max HP",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "defend_1",
+      "name": "Defensive Stance",
+      "description": "Reduce incoming damage by half for one turn.",
+      "focus_cost": 2,
+      "effect_type": "defense",
+      "effect_value": 0.5,
+      "effect_description": "Halves incoming damage",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "focus_1",
+      "name": "Mental Focus",
+      "description": "Concentrate to regain 3 focus points.",
+      "focus_cost": 1,
+      "effect_type": "focus_gain",
+      "effect_value": 3,
+      "effect_description": "+3 Focus",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "meditate_1",
+      "name": "Deep Meditation",
+      "description": "Enter a vulnerable state to greatly increase focus. Doubles incoming damage but grants +10 focus points.",
+      "focus_cost": 3,
+      "effect_type": "focus_gain_vulnerable",
+      "effect_value": 10,
+      "vulnerability_multiplier": 2.0,
+      "effect_description": "Doubles damage taken, +10 Focus",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "tank_1",
+      "name": "Last Stand",
+      "description": "Take a risky stance that triples incoming damage, but if you survive, heal back 80% of your maximum health.",
+      "focus_cost": 4,
+      "effect_type": "tank_heal",
+      "effect_value": 0.8,
+      "vulnerability_multiplier": 3.0,
+      "effect_description": "Triples damage taken, heals 80% max HP if survived",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "reflect_1",
+      "name": "Reflective Barrier",
+      "description": "Create a barrier that reflects 50% of incoming damage back to the attacker.",
+      "focus_cost": 3,
+      "effect_type": "reflect",
+      "effect_value": 0.5,
+      "effect_description": "Reflects 50% of damage taken",
+      "type": "action",
+      "level": 1
+    },
+    {
+      "id": "analyze_1",
+      "name": "Analyze Weakness",
+      "description": "Study the enemy to increase damage dealt by 25% for the next 2 turns.",
+      "focus_cost": 2,
+      "effect_type": "damage_boost",
+      "effect_value": 0.25,
+      "effect_duration": 2,
+      "effect_description": "+25% damage for 2 turns",
+      "type": "action",
+      "level": 1
+    }
+  ]
+  
