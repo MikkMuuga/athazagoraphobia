@@ -2,9 +2,9 @@
     "intro": {
         "title": "",
         "content": [
-		    "<p class=\"story-paragraph\">Welcome to Athazagoraphobia, a text-based adventure game about memory, fear, and the unknown.</p>",
-	        "<p class=\"story-paragraph\">You will navigate through a mysterious world, uncovering secrets about yourself and your past. Make choices carefully, as they will affect your journey.</p>"
-		 ],
+            "<p class=\"story-paragraph\">Welcome to Athazagoraphobia, a text-based adventure game about memory, fear, and the unknown.</p>",
+            "<p class=\"story-paragraph\">You will navigate through a mysterious world, uncovering secrets about yourself and your past. Make choices carefully, as they will affect your journey.</p>"
+        ],
         "choices": [
             { "text": "You open your eyes.", "nextScene": "awaken" }
         ]
@@ -14,7 +14,8 @@
         "title": "CHAPTER 1",
         "content": [
             "<p class=\"story-paragraph\">The canopy of foliage above your head is dipped in gold, each branch still clinging to the decaying summer glory, but its gilt is already shedding down onto the barely trodden forest paths. It is fresh, at least, and although the dewy, chill air may not move around, the smell of soggy wood and decaying leaves is always a pleasant change from that of cheap, bitter ale and rotting harvest mounts.</p>",
-            "<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>\n<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>"
+            "<p class=\"story-paragraph\">Your back is one with the drying bark of an old beech tree, pressed into a convenient nook at its broad base. Moss spills around the roots, greedily swallowing the tiniest of sounds of your boots, heels dug firmly.</p>",
+            "<p class=\"story-paragraph\">As your vision clears, you see four bodies scattered around you. Skeletons, wearing tattered remains of what once might have been armor. These were your companions, your party members. You seem to be the only survivor.</p>"
         ],
         "choices": [
             { "text": "Try to focus on remembering", "nextScene": "remember_attempt" }
@@ -34,17 +35,27 @@
     },
     "self_focus": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">Your name is: <input type=\"text\" id=\"player-name\" class=\"name-input\" autocomplete=\"off\"><button id=\"name-submit\" class=\"choice-button\" style=\"display:inline-block; padding:5px 10px;\">Enter</button></p>",
+        "content": [
+            "<p class=\"story-paragraph\">Your name is: <input type=\"text\" id=\"player-name\" class=\"name-input\" autocomplete=\"off\"><button id=\"name-submit\" class=\"choice-button\" style=\"display:inline-block; padding:5px 10px;\">Enter</button></p>"
+        ],
         "noChoices": true
     },
     "self_focus_gender": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">Your name is: {{character.name}}</p>\n<p class=\"story-paragraph\">You are <span class=\"gender-option\" id=\"male-option\">male</span>/<span class=\"gender-option\" id=\"female-option\">female</span>.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">Your name is: {{character.name}}</p>",
+            "<p class=\"story-paragraph\">You are <span class=\"gender-option\" id=\"male-option\">male</span> / <span class=\"gender-option\" id=\"female-option\">female</span>.</p>"
+        ],
         "noChoices": true
     },
     "self_focus_complete": {
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">Your name is: {{character.name}}</p>\n<p class=\"story-paragraph\">You are {{character.gender}}.</p>\n<p class=\"story-paragraph\">You remember being an adventurer, alongside your party members. You seem to be the only one who survived your last mission. The details are hazy, but you recall entering these woods on a quest to investigate strange occurrences.</p>\n<p class=\"story-paragraph\">You hear something moving in the bushes nearby.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">Your name is: {{character.name}}</p>",
+            "<p class=\"story-paragraph\">You are {{character.gender}}.</p>",
+            "<p class=\"story-paragraph\">You remember being an adventurer, alongside your party members. You seem to be the only one who survived your last mission. The details are hazy, but you recall entering these woods on a quest to investigate strange occurrences.</p>",
+            "<p class=\"story-paragraph\">You hear something moving in the bushes nearby.</p>"
+        ],
         "choices": [
             { "text": "Stand up", "nextScene": "wolves_1_1" }
         ]
@@ -52,7 +63,11 @@
     "wolves_1_1": {
         "name": "Wolf Encounter",
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">As you struggle to your feet, three wolves emerge from the bushes. Their eyes gleam with hunger as they slowly circle around you, cutting off any escape route.</p>\n<p class=\"story-paragraph\">Your muscles ache and your head feels light. These wolves must have smelled the death around you and came for an easy meal. Unfortunately for them, not everyone here is dead yet.</p>\n<p class=\"story-paragraph\">You need to act quickly. The wolves are getting closer, their growls growing louder by the second.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">As you struggle to your feet, three wolves emerge from the bushes. Their eyes gleam with hunger as they slowly circle around you, cutting off any escape route.</p>",
+            "<p class=\"story-paragraph\">Your muscles ache and your head feels light. These wolves must have smelled the death around you and came for an easy meal. Unfortunately for them, not everyone here is dead yet.</p>",
+            "<p class=\"story-paragraph\">You need to act quickly. The wolves are getting closer, their growls growing louder by the second.</p>"
+        ],
         "journal": [
             {
                 "category": "Main Entries",
@@ -74,7 +89,10 @@
     "wolves_weapon": {
         "name": "First Battle",
         "title": "CHAPTER 1",
-        "content": "<p class=\"story-paragraph\">You quickly scan the area for a weapon. Your eyes land on a rusty sword lying near one of the skeletons. You grab it just as the wolves pounce.</p>\n<p class=\"story-paragraph\">The battle is intense, but with your newfound weapon, you manage to fend off the wolves. They retreat into the forest, but you know they might return.</p>",
+        "content": [
+            "<p class=\"story-paragraph\">You quickly scan the area for a weapon. Your eyes land on a rusty sword lying near one of the skeletons. You grab it just as the wolves pounce.</p>",
+            "<p class=\"story-paragraph\">The battle is intense, but with your newfound weapon, you manage to fend off the wolves. They retreat into the forest, but you know they might return.</p>"
+        ],
         "achievement": {
             "title": "The Swordsman",
             "description": "You picked the sword as your weapon of choice."

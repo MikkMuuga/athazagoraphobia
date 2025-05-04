@@ -1,7 +1,10 @@
 {
     "demo_scene": {
         "title": "CHAPTER 2",
-        "content": "<p class=\"story-paragraph\">This is a demo scene to show that the transition between chapters works correctly.</p>\n<p class=\"story-paragraph\">You've successfully moved from Chapter 1 to Chapter 2!</p>",
+        "content": [
+            "<p class=\"story-paragraph\">This is a demo scene to show that the transition between chapters works correctly.</p>",
+            "<p class=\"story-paragraph\">You've successfully moved from Chapter 1 to Chapter 2!</p>"
+        ],
         "choices": [
             { "text": "Continue the adventure", "nextScene": "next_scene" }
         ]

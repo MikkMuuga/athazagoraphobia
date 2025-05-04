@@ -387,7 +387,7 @@ function initJournalEventHandlers() {
             
             if (entry) {
                 // Hide all journal categories
-                document.querySelectorAll('.journal-category').forEach(el => {
+                document.querySelectorAll('.journal-category, h2').forEach(el => {
                     el.style.display = 'none';
                 });
                 
@@ -400,10 +400,15 @@ function initJournalEventHandlers() {
                 document.getElementById('journal-detail-content').innerHTML = entry.text;
                 document.getElementById('journal-detail-timestamp').textContent = entry.timestamp;
                 
-                // Set up back button
-                document.getElementById('back-to-journal-list').addEventListener('click', function() {
+                // Set up back button - replace with new function to avoid duplicating listeners
+                const backBtn = document.getElementById('back-to-journal-list');
+                // Remove previous listeners to avoid duplicates
+                const newBackBtn = backBtn.cloneNode(true);
+                backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+                
+                newBackBtn.addEventListener('click', function() {
                     detailView.style.display = 'none';
-                    document.querySelectorAll('.journal-category').forEach(el => {
+                    document.querySelectorAll('.journal-category, h2').forEach(el => {
                         el.style.display = 'block';
                     });
                 });
@@ -476,6 +481,7 @@ async function displaySystemScreen(screenId) {
 }
 
 
+// Function to process system screen content with fixes for journal display
 function processSystemContent(template, screenId) {
     // Simple template processing
     let content = template;
@@ -538,10 +544,16 @@ function processSystemContent(template, screenId) {
                 categoriesHtml += '</div>';
             });
             
-            // Replace the categories section
+            // Replace the categories section - FIX: Remove the template tag
             content = content.replace(/\{\{#each journalCategories\}\}[\s\S]*?\{\{\/each\}\}/g, categoriesHtml);
+            
+            // Remove any remaining template expressions
+            content = content.replace(/\{\{[^}]+\}\}/g, '');
         } else {
             content = content.replace(/\{\{#if journalCategories\.length\}\}[\s\S]*?\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1');
+            
+            // Remove any remaining template expressions
+            content = content.replace(/\{\{[^}]+\}\}/g, '');
         }
     }
     
@@ -567,8 +579,14 @@ function processSystemContent(template, screenId) {
             
             // Replace the achievements section
             content = content.replace(/\{\{#each achievements\}\}[\s\S]*?\{\{\/each\}\}/g, achievementsHtml);
+            
+            // Remove any remaining template expressions
+            content = content.replace(/\{\{[^}]+\}\}/g, '');
         } else {
             content = content.replace(/\{\{#if achievements\.length\}\}[\s\S]*?\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g, '$1');
+            
+            // Remove any remaining template expressions
+            content = content.replace(/\{\{[^}]+\}\}/g, '');
         }
     }
     
@@ -602,6 +620,9 @@ function processSystemContent(template, screenId) {
                            .replace(/\{\{#if this\.exists\}\}([\s\S]*?)\{\{\/if\}\}/g, slot.exists ? '$1' : '')
             ).join('');
         });
+        
+        // Remove any remaining template expressions
+        content = content.replace(/\{\{[^}]+\}\}/g, '');
     }
     
     return content;
