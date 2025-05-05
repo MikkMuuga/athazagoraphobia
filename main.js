@@ -960,30 +960,68 @@ function loadFightSystem() {
     });
 }
 
-function startCombat(fightId) {
-    console.log("Starting combat with fight ID:", fightId);
+// Start combat with a specific fight ID
+async function startCombat(fightId) {
+    // Show a loading indicator
+    const contentArea = document.getElementById('content-area');
+    if (contentArea) {
+        contentArea.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading combat data...</div>
+            </div>
+        `;
+    }
     
-    // Load the fight data
-    fetch(`fight/fights.json`)
-        .then(response => response.json())
-        .then(fights => {
-            const fight = fights[fightId];
-            if (!fight) {
-                console.error(`Fight with ID ${fightId} not found!`);
-                return;
-            }
-            
-            console.log("Fight data loaded:", fight);
-            
-            // Initialize combat state
-            initiateCombat(fight);
-            
-            // Display combat UI
-            displayCombatUI();
-        })
-        .catch(error => {
-            console.error('Error loading fight data:', error);
+    try {
+        // Load all necessary data in parallel
+        const [fightsResponse, attackResponse, actionResponse] = await Promise.all([
+            fetch('fight/fights.json'),
+            fetch('fight/attack.json'),
+            fetch('fight/action.json')
+        ]);
+        
+        const fights = await fightsResponse.json();
+        const attackData = await attackResponse.json();
+        const actionData = await actionResponse.json();
+        
+        // Store the loaded card data in combatState
+        combatState.attackCards = attackData;
+        combatState.actionCards = actionData;
+        
+        console.log("Card data loaded successfully:", {
+            attackCards: Object.keys(attackData),
+            actionCards: actionData.length
         });
+        
+        if (!fights[fightId]) {
+            console.error(`Fight ID ${fightId} not found!`);
+            if (contentArea) {
+                contentArea.innerHTML = `
+                    <div class="error-message">
+                        <h2>Error</h2>
+                        <p>Fight not found. Please try again.</p>
+                        <button onclick="location.reload()">Reload</button>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // Now that all data is loaded, initiate combat
+        initiateCombat(fights[fightId]);
+    } catch (error) {
+        console.error("Error loading fight data:", error);
+        if (contentArea) {
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <h2>Error</h2>
+                    <p>Failed to load combat data: ${error.message}</p>
+                    <button onclick="location.reload()">Reload</button>
+                </div>
+            `;
+        }
+    }
 }
 
 // Start the game when the page loads

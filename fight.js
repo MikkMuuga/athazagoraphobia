@@ -38,7 +38,8 @@ let combatState = {
     enemyDamageMultiplier: 1.0
 };
 
-// Initialize combat with a specific fight ID
+// Initialize combat with a specific fight
+// Initialize combat with a specific fight
 function initiateCombat(fight) {
     console.log("Initiating combat with:", fight);
     
@@ -129,13 +130,17 @@ function initiateCombat(fight) {
     // Deal initial hand
     dealPlayerHand();
     
+    // Display the combat UI
+    displayCombatUI();
+    
     console.log("Combat initialized:", combatState);
 }
-
 
 // Load fight data from fights.json
 async function loadFight(fightId) {
     try {
+        console.log("Loading fight data for:", fightId);
+        
         // Load all necessary data in parallel
         const [fightsResponse, attackResponse, actionResponse] = await Promise.all([
             fetch('fight/fights.json'),
@@ -144,39 +149,28 @@ async function loadFight(fightId) {
         ]);
         
         const fights = await fightsResponse.json();
-        combatState.attackCards = await attackResponse.json();
-        combatState.actionCards = await actionResponse.json();
+        const attackData = await attackResponse.json();
+        const actionData = await actionResponse.json();
+        
+        // Store the loaded card data in combatState
+        combatState.attackCards = attackData;
+        combatState.actionCards = actionData;
+        
+        console.log("Card data loaded successfully:", {
+            attackCards: Object.keys(attackData),
+            actionCards: actionData.length
+        });
         
         if (!fights[fightId]) {
             console.error(`Fight ID ${fightId} not found!`);
-            return;
+            return null;
         }
         
-        combatState.currentFight = fights[fightId];
-        
-        // Initialize player and enemy stats
-        gameState.playerStats.health = gameState.playerStats.health || combatState.currentFight.player.maxHealth;
-        combatState.currentFight.enemy.currentHealth = combatState.currentFight.enemy.maxHealth;
-        
-        // Initialize player deck based on class
-        const playerClass = gameState.playerStats.class || "sword";
-        
-        // Initialize player attack deck
-        combatState.playerAttackDeck = [];
-        combatState.currentFight.player.attackDeck.forEach(cardId => {
-            if (cardId.startsWith(playerClass.toLowerCase())) {
-                combatState.playerAttackDeck.push(cardId);
-            }
-        });
-        
-        // Initialize player action deck
-        combatState.playerActionDeck = [...combatState.currentFight.player.actionDeck];
-        
-        // Initialize enemy decks
-        combatState.enemyAttackDeck = [...combatState.currentFight.enemy.attackDeck];
-        combatState.enemyActionDeck = [...combatState.currentFight.enemy.actionDeck];
+        // Return the fight data
+        return fights[fightId];
     } catch (error) {
         console.error("Error loading fight data:", error);
+        return null;
     }
 }
 
@@ -187,125 +181,36 @@ function getCardById(cardId) {
         return null;
     }
     
-    try {
-        // Parse the card ID to determine its properties
-        const parts = cardId.split('_');
-        const baseType = parts[0] || '';
-        
-        // Determine card type and properties based on ID
-        let cardType, cardName, cardDescription, focusCost, baseDamage, effectType, effectValue;
-        
-        // Action cards
-        if (baseType === 'heal') {
-            cardType = 'action';
-            cardName = 'Healing Potion';
-            cardDescription = 'Restore some health.';
-            focusCost = 2;
-            effectType = 'heal';
-            effectValue = 0.2; // 20% of max health
-        } 
-        else if (baseType === 'defend') {
-            cardType = 'action';
-            cardName = 'Defensive Stance';
-            cardDescription = 'Reduce incoming damage.';
-            focusCost = 2;
-            effectType = 'defense';
-            effectValue = 0.5; // 50% damage reduction
-        }
-        else if (baseType === 'focus') {
-            cardType = 'action';
-            cardName = 'Concentrate';
-            cardDescription = 'Gain additional focus.';
-            focusCost = 1;
-            effectType = 'focus_gain';
-            effectValue = 3;
-        }
-        else if (baseType === 'reflect') {
-            cardType = 'action';
-            cardName = 'Reflect';
-            cardDescription = 'Reflect some damage back to the attacker.';
-            focusCost = 3;
-            effectType = 'reflect';
-            effectValue = 0.3; // 30% damage reflection
-        }
-        else if (baseType === 'analyze') {
-            cardType = 'action';
-            cardName = 'Analyze';
-            cardDescription = 'Identify enemy weaknesses, increasing your damage.';
-            focusCost = 2;
-            effectType = 'damage_boost';
-            effectValue = 0.25; // 25% damage boost
-        }
-        else if (baseType === 'tank') {
-            cardType = 'action';
-            cardName = 'Last Stand';
-            cardDescription = 'Take more damage but heal at the start of your next turn.';
-            focusCost = 2;
-            effectType = 'tank_heal';
-            effectValue = 0.3; // 30% of max health healed next turn
-        }
-        // Attack cards
-        else {
-            cardType = 'attack';
-            const weapon = baseType || 'sword';
-            const element = parts[1] || 'normal';
-            const tier = parseInt(parts[2]) || 1;
-            
-            // Determine base damage by weapon and tier
-            switch (weapon) {
-                case 'sword':
-                    baseDamage = 5 + (tier - 1) * 2;
-                    break;
-                case 'daggers':
-                    baseDamage = 3 + (tier - 1) * 1.5;
-                    break;
-                case 'staff':
-                    baseDamage = 4 + (tier - 1) * 1.8;
-                    break;
-                default:
-                    baseDamage = 4 + (tier - 1) * 2;
-            }
-            
-            // Safely create weapon and element names - avoid toUpperCase() on undefined
-            let weaponName = "Weapon";
-            if (weapon && typeof weapon === 'string') {
-                weaponName = weapon.charAt(0).toUpperCase() + weapon.slice(1);
-            }
-            
-            let elementName = "Normal";
-            if (element && typeof element === 'string') {
-                elementName = element.charAt(0).toUpperCase() + element.slice(1);
-            }
-            
-            cardName = `${elementName} ${weaponName}`;
-            cardDescription = `Deal ${baseDamage} ${element || 'normal'} damage.`;
-            focusCost = tier;
-            effectType = 'damage';
-            effectValue = baseDamage;
-        }
-        
-        return {
-            id: cardId,
-            name: cardName,
-            description: cardDescription,
-            focus_cost: focusCost,
-            type: cardType,
-            base_damage: baseDamage,
-            effect_type: effectType,
-            effect_value: effectValue
-        };
-    } catch (error) {
-        console.error("Error parsing card ID:", cardId, error);
-        return {
-            id: cardId,
-            name: "Unknown Card",
-            description: "This card could not be identified.",
-            focus_cost: 1,
-            type: "unknown",
-            effect_type: "none",
-            effect_value: 0
-        };
+    // Check if card data is loaded
+    if (!combatState.attackCards || !combatState.actionCards) {
+        console.error("Card data not loaded yet for card:", cardId);
+        return null;
     }
+    
+    // Look for attack cards
+    if (combatState.attackCards) {
+        // Check each weapon type
+        for (const weaponType in combatState.attackCards) {
+            if (Array.isArray(combatState.attackCards[weaponType])) {
+                const card = combatState.attackCards[weaponType].find(c => c.id === cardId);
+                if (card) {
+                    return card;
+                }
+            }
+        }
+    }
+    
+    // Look for action cards
+    if (Array.isArray(combatState.actionCards)) {
+        const card = combatState.actionCards.find(c => c.id === cardId);
+        if (card) {
+            return card;
+        }
+    }
+    
+    // If card not found, log an error and return null
+    console.error(`Card with ID ${cardId} not found in loaded data`);
+    return null;
 }
 
 // Deal cards to player's hand
@@ -345,19 +250,11 @@ function createCardElement(card) {
     cardElement.className = 'card';
     cardElement.dataset.cardId = card.id || '';
     
-    // Determine card color class based on type and effect
+    // Determine card color class based on type and affinity
     let cardColorClass = 'card-normal';
     
-    if (card.type === 'attack' && card.id && typeof card.id === 'string') {
-        try {
-            const parts = card.id.split('_');
-            const element = parts[1] || 'normal';
-            cardColorClass = `card-${element}`;
-        } catch (error) {
-            console.error("Error parsing card ID for color:", error);
-            // Fallback to default
-            cardColorClass = 'card-normal';
-        }
+    if (card.type === 'attack' && card.affinity) {
+        cardColorClass = `card-${card.affinity}`;
     } else if (card.type === 'action') {
         cardColorClass = 'card-action';
     }
@@ -490,7 +387,6 @@ function displayCombatUI() {
     }
 }
 
-
 // Display player's hand
 function displayPlayerHand() {
     const handContainer = document.getElementById('player-hand');
@@ -503,6 +399,13 @@ function displayPlayerHand() {
     
     if (!Array.isArray(combatState.playerHand)) {
         console.error("Player hand is not an array:", combatState.playerHand);
+        return;
+    }
+    
+    // Check if card data is loaded
+    if (!combatState.attackCards || !combatState.actionCards) {
+        console.error("Card data not loaded yet, cannot display hand");
+        handContainer.innerHTML = '<div class="loading-message">Loading cards...</div>';
         return;
     }
     
@@ -525,9 +428,9 @@ function displayPlayerHand() {
             }
             
             if (card.type === 'attack') {
-                attackCards.push(cardId);
+                attackCards.push({id: cardId, card: card});
             } else if (card.type === 'action') {
-                actionCards.push(cardId);
+                actionCards.push({id: cardId, card: card});
             } else {
                 console.error("Unknown card type:", card.type, "for card:", cardId);
             }
@@ -537,15 +440,8 @@ function displayPlayerHand() {
     }
     
     // Display attack cards
-    attackCards.forEach(cardId => {
+    attackCards.forEach(({id: cardId, card}) => {
         try {
-            const card = getCardById(cardId);
-            
-            if (!card) {
-                console.error("Failed to get card data for ID:", cardId);
-                return;
-            }
-            
             const cardElement = createCardElement(card);
             cardElement.dataset.cardId = cardId;
             cardElement.classList.add('attack-card');
@@ -578,15 +474,8 @@ function displayPlayerHand() {
     }
     
     // Display action cards
-    actionCards.forEach(cardId => {
+    actionCards.forEach(({id: cardId, card}) => {
         try {
-            const card = getCardById(cardId);
-            
-            if (!card) {
-                console.error("Failed to get card data for ID:", cardId);
-                return;
-            }
-            
             const cardElement = createCardElement(card);
             cardElement.dataset.cardId = cardId;
             cardElement.classList.add('action-card');
@@ -710,32 +599,28 @@ function playSelectedCards() {
     updateFocusCostDisplay();
 }
 
-// Create a card element
+// Update the createCardElement function for better card design
 function createCardElement(card) {
     if (!card) {
         console.error("Attempted to create card element with null card data");
-        return document.createElement('div'); // Return empty div to avoid errors
+        const errorElement = document.createElement('div');
+        errorElement.className = 'card card-error';
+        errorElement.innerHTML = `
+            <div class="card-name">Error</div>
+            <div class="card-description">Card data not available</div>
+        `;
+        return errorElement;
     }
-    
-    console.log("Creating card element for:", card);
     
     const cardElement = document.createElement('div');
     cardElement.className = 'card';
     cardElement.dataset.cardId = card.id || '';
     
-    // Determine card color class based on type and effect
+    // Determine card color class based on type and affinity
     let cardColorClass = 'card-normal';
     
-    if (card.type === 'attack' && card.id && typeof card.id === 'string') {
-        try {
-            const parts = card.id.split('_');
-            const element = parts[1] || 'normal';
-            cardColorClass = `card-${element}`;
-        } catch (error) {
-            console.error("Error parsing card ID for color:", error);
-            // Fallback to default
-            cardColorClass = 'card-normal';
-        }
+    if (card.type === 'attack' && card.affinity) {
+        cardColorClass = `card-${card.affinity}`;
     } else if (card.type === 'action') {
         cardColorClass = 'card-action';
     }
@@ -1337,4 +1222,80 @@ function logPlayerHand() {
             console.log(`Card ${cardId}:`, card);
         });
     }
+}
+
+// Start a fight with the given ID
+function startFight(fightId) {
+    // First load the fight data
+    loadFight(fightId).then(() => {
+        // Combat will be initiated by the loadFight function after data is loaded
+        console.log("Fight started:", fightId);
+    }).catch(error => {
+        console.error("Error starting fight:", error);
+    });
+}
+
+// Preload all card data for a specific fight
+async function preloadCardData(fight) {
+    // Collect all card IDs used in this fight
+    const cardIds = [];
+    
+    // Add player cards
+    if (fight.player) {
+        if (Array.isArray(fight.player.attackDeck)) {
+            cardIds.push(...fight.player.attackDeck);
+        }
+        if (Array.isArray(fight.player.actionDeck)) {
+            cardIds.push(...fight.player.actionDeck);
+        }
+    }
+    
+    // Add enemy cards
+    if (fight.enemy) {
+        if (Array.isArray(fight.enemy.attackDeck)) {
+            cardIds.push(...fight.enemy.attackDeck);
+        }
+        if (Array.isArray(fight.enemy.actionDeck)) {
+            cardIds.push(...fight.enemy.actionDeck);
+        }
+    }
+    
+    console.log("Preloading card data for:", cardIds);
+    
+    // Verify each card is loaded
+    for (const cardId of cardIds) {
+        const card = getCardById(cardId);
+        if (!card || card.name === "Loading..." || card.name === "Unknown Card") {
+            console.warn(`Card ${cardId} not properly loaded, retrying...`);
+            
+            // Try to find the card in the loaded data
+            let found = false;
+            
+            // Check attack cards
+            for (const weaponType in combatState.attackCards) {
+                if (Array.isArray(combatState.attackCards[weaponType])) {
+                    const foundCard = combatState.attackCards[weaponType].find(c => c.id === cardId);
+                    if (foundCard) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Check action cards if not found
+            if (!found && Array.isArray(combatState.actionCards)) {
+                const foundCard = combatState.actionCards.find(c => c.id === cardId);
+                if (foundCard) {
+                    found = true;
+                }
+            }
+            
+            if (!found) {
+                console.error(`Card ${cardId} not found in loaded data`);
+            }
+        }
+    }
+    
+    // Return a promise that resolves when all cards are verified
+    return Promise.resolve();
 }
