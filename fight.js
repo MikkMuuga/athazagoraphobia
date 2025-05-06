@@ -1299,3 +1299,650 @@ async function preloadCardData(fight) {
     // Return a promise that resolves when all cards are verified
     return Promise.resolve();
 }
+// ... existing code until the toggleCardSelection function ...
+
+// Track the last clicked card and timestamp for double-click detection
+let lastClickedCard = null;
+let lastClickTime = 0;
+
+function toggleCardSelection(cardId, cardElement) {
+    if (!cardId || !cardElement) {
+        console.error("Invalid card or element in toggleCardSelection:", cardId, cardElement);
+        return;
+    }
+    
+    const card = getCardById(cardId);
+    if (!card) {
+        console.error("Failed to get card data for selection:", cardId);
+        return;
+    }
+    
+    // Initialize selectedCards array if it doesn't exist
+    if (!combatState.selectedCards) {
+        combatState.selectedCards = [];
+    }
+    
+    // Initialize totalFocusCost if it doesn't exist
+    if (combatState.totalFocusCost === undefined) {
+        combatState.totalFocusCost = 0;
+    }
+    
+    // Double-click detection
+    const now = new Date().getTime();
+    if (lastClickedCard === cardId && now - lastClickTime < 300) {
+        // Double click detected - apply card immediately if it's already selected
+        if (cardElement.classList.contains('selected')) {
+            // Apply the card effect immediately
+            playCardImmediately(cardId, card);
+            return;
+        }
+    }
+    
+    // Update last clicked card information
+    lastClickedCard = cardId;
+    lastClickTime = now;
+    
+    // Check if card is already selected
+    const isSelected = cardElement.classList.contains('selected');
+    
+    // If card is discarded, remove discard first
+    if (cardElement.classList.contains('discard')) {
+        toggleCardDiscard(cardId, cardElement);
+    }
+    
+    // Toggle selection state
+    if (isSelected) {
+        cardElement.classList.remove('selected');
+        combatState.selectedCards = combatState.selectedCards.filter(id => id !== cardId);
+        combatState.totalFocusCost -= card.focus_cost || 0;
+    } else {
+        // Check if we have enough focus
+        if (combatState.totalFocusCost + (card.focus_cost || 0) <= combatState.playerFocus) {
+            cardElement.classList.add('selected');
+            combatState.selectedCards.push(cardId);
+            combatState.totalFocusCost += card.focus_cost || 0;
+        } else {
+            // Not enough focus - don't select the card and show a message
+            displayCombatMessage("Not enough focus to select this card!");
+            return;
+        }
+    }
+    
+    // Update focus cost display
+    updateFocusCostDisplay();
+    
+    // Enable/disable play button based on selections
+    const endTurnBtn = document.getElementById('end-turn-btn');
+    if (endTurnBtn) {
+        endTurnBtn.disabled = combatState.selectedCards.length === 0;
+    }
+}
+
+// New function to play a card immediately when double-clicked
+function playCardImmediately(cardId, card) {
+    // Check if player has enough focus
+    if (card.focus_cost > combatState.playerFocus) {
+        displayCombatMessage("Not enough focus to play this card!");
+        return;
+    }
+    
+    // Remove card from selection, hand, and add to played cards
+    combatState.selectedCards = combatState.selectedCards.filter(id => id !== cardId);
+    combatState.playerHand = combatState.playerHand.filter(id => id !== cardId);
+    combatState.playedCards.push(cardId);
+    
+    // Deduct focus cost
+    combatState.playerFocus -= card.focus_cost;
+    combatState.totalFocusCost -= card.focus_cost;
+    
+    // Display message
+    displayCombatMessage(`You played ${card.name}!`);
+    
+    // Apply card effect
+    applyCardEffect(card, 'player');
+    
+    // Update UI
+    displayPlayerHand();
+    updateFocusDisplay();
+    updateFocusCostDisplay();
+    
+    // Check if combat has ended
+    checkCombatEnd();
+}
+
+// The rest of the file remains the same...
+
+// Update the focus cost display
+function updateFocusCostDisplay() {
+    const costDisplay = document.getElementById('focus-cost-display');
+    if (costDisplay) {
+        costDisplay.textContent = `Total Focus Cost: ${combatState.totalFocusCost || 0}`;
+    }
+}
+
+// Enhanced Enemy AI System for Athazagoraphobia
+
+// Add these properties to the combatState object at the top of the file
+// combatState.playerLastPlayed = []; // Track cards player recently played
+// combatState.enemyStrategy = "balanced"; // Current enemy strategy
+// combatState.enemyThreatAssessment = 0; // How threatened the enemy feels
+
+// Initialize these in the initiateCombat function
+function initiateCombat(fight) {
+    // ... existing initialization code ...
+    
+    // Add AI state tracking
+    combatState.playerLastPlayed = [];
+    combatState.enemyStrategy = fight.enemy?.defaultStrategy || "balanced";
+    combatState.enemyThreatAssessment = 0;
+    
+    // ... rest of the initialization ...
+}
+
+// Add this to the playCardImmediately function to track what the player plays
+function playCardImmediately(cardId, card) {
+    // ... existing code ...
+    
+    // Track this card for AI response
+    combatState.playerLastPlayed.push({
+        id: cardId,
+        card: card,
+        turnPlayed: combatState.turnCount
+    });
+    
+    // Limit history to last 5 cards
+    if (combatState.playerLastPlayed.length > 5) {
+        combatState.playerLastPlayed.shift();
+    }
+    
+    // ... rest of the function ...
+}
+
+// Replace the executeEnemyTurn function with this enhanced version
+function executeEnemyTurn() {
+    displayCombatMessage(`${combatState.currentFight.enemy.name} is analyzing your moves...`);
+    
+    // Clear enemy played cards
+    combatState.enemyPlayedCards = [];
+    
+    // AI decision making process
+    setTimeout(() => {
+        // Analyze player's recent moves and update strategy
+        analyzePlayerStrategy();
+        
+        // Select and play cards based on current strategy
+        executeEnemyStrategy();
+        
+        // If enemy hand is empty, deal new cards
+        if (combatState.enemyHand.length === 0) {
+            dealEnemyHand();
+        }
+        
+        // End enemy turn if combat is still ongoing
+        if (combatState.inCombat) {
+            setTimeout(() => {
+                startPlayerTurn();
+            }, 1000);
+        }
+    }, 1500); // Slight delay to simulate thinking
+}
+
+// Analyze player's moves and determine appropriate strategy
+function analyzePlayerStrategy() {
+    // Skip if no cards have been played yet
+    if (combatState.playerLastPlayed.length === 0) {
+        return;
+    }
+    
+    // Calculate threat level based on recent player moves
+    let damageThreats = 0;
+    let buffThreats = 0;
+    let debuffThreats = 0;
+    
+    // Analyze the last played cards
+    for (const playedCard of combatState.playerLastPlayed) {
+        const card = playedCard.card;
+        
+        // Recent cards have more impact on threat assessment
+        const recencyMultiplier = (combatState.turnCount - playedCard.turnPlayed <= 1) ? 2 : 1;
+        
+        if (card.type === 'attack') {
+            damageThreats += (card.base_damage || 1) * recencyMultiplier;
+        } else if (card.type === 'action') {
+            switch (card.effect_type) {
+                case 'damage_boost':
+                    buffThreats += 3 * recencyMultiplier;
+                    break;
+                case 'focus_gain':
+                    buffThreats += 2 * recencyMultiplier;
+                    break;
+                case 'heal':
+                    buffThreats += 2 * recencyMultiplier;
+                    break;
+                case 'tank_heal':
+                    debuffThreats += 1 * recencyMultiplier; // Self-inflicted vulnerability
+                    buffThreats += 2 * recencyMultiplier;  // But potential healing
+                    break;
+                default:
+                    buffThreats += 1 * recencyMultiplier;
+            }
+        }
+    }
+    
+    // Update the enemy's threat assessment
+    combatState.enemyThreatAssessment = damageThreats * 1.5 + buffThreats + debuffThreats;
+    
+    // Determine the enemy strategy based on threat assessment and health percentage
+    const healthPercentage = (combatState.enemyHealth / combatState.enemyMaxHealth) * 100;
+    let newStrategy = "balanced";
+    
+    if (healthPercentage < 30) {
+        // Low health - more desperate strategies
+        newStrategy = (Math.random() < 0.7) ? "defensive" : "aggressive";
+    } else if (combatState.enemyThreatAssessment > 10) {
+        // High threat - likely defend
+        newStrategy = "defensive";
+    } else if (combatState.enemyThreatAssessment < 3 && healthPercentage > 60) {
+        // Low threat and good health - be aggressive
+        newStrategy = "aggressive";
+    } else if (damageThreats > buffThreats * 2) {
+        // Player is focusing on damage - defend against it
+        newStrategy = "defensive";
+    } else if (buffThreats > damageThreats) {
+        // Player is buffing up - try to finish them before they get too strong
+        newStrategy = "aggressive";
+    }
+    
+    // Occasionally mix up the strategy to be less predictable
+    if (Math.random() < 0.2) {
+        const strategies = ["balanced", "defensive", "aggressive"];
+        const randomStrategy = strategies[Math.floor(Math.random() * strategies.length)];
+        newStrategy = randomStrategy;
+    }
+    
+    // Update enemy strategy
+    combatState.enemyStrategy = newStrategy;
+    
+    console.log(`Enemy assessment - Damage threats: ${damageThreats}, Buff threats: ${buffThreats}`);
+    console.log(`Enemy adopting ${newStrategy} strategy with threat level ${combatState.enemyThreatAssessment}`);
+}
+
+// Execute enemy's turn based on current strategy
+function executeEnemyStrategy() {
+    const strategy = combatState.enemyStrategy;
+    const enemyFocus = combatState.currentFight.enemy.focus || 5;
+    let remainingFocus = enemyFocus;
+    
+    // Clone the enemy hand for manipulation
+    const availableCards = [...combatState.enemyHand];
+    
+    // Find specific card types
+    const attackCards = availableCards.filter(cardId => {
+        const card = getCardById(cardId);
+        return card && card.type === 'attack';
+    });
+    
+    const defenseCards = availableCards.filter(cardId => {
+        const card = getCardById(cardId);
+        return card && card.type === 'action' && 
+              (card.effect_type === 'defense' || card.effect_type === 'reflect');
+    });
+    
+    const healCards = availableCards.filter(cardId => {
+        const card = getCardById(cardId);
+        return card && card.type === 'action' && card.effect_type === 'heal';
+    });
+    
+    const utilityCards = availableCards.filter(cardId => {
+        const card = getCardById(cardId);
+        return card && card.type === 'action' && 
+              !['defense', 'reflect', 'heal'].includes(card.effect_type);
+    });
+    
+    // Cards to play this turn
+    const cardsToPlay = [];
+    
+    // Apply strategy-specific decision making
+    if (strategy === "defensive") {
+        displayCombatMessage(`${combatState.currentFight.enemy.name} takes a defensive stance!`);
+        
+        // Priority 1: Defense cards if we're threatened
+        for (const cardId of defenseCards) {
+            const card = getCardById(cardId);
+            if (card && card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+            }
+            
+            // Break once we've used at least one defense card
+            if (cardsToPlay.length > 0 && Math.random() < 0.7) break;
+        }
+        
+        // Priority 2: Healing if health is below 50%
+        const healthPercentage = (combatState.enemyHealth / combatState.enemyMaxHealth) * 100;
+        if (healthPercentage < 50) {
+            for (const cardId of healCards) {
+                const card = getCardById(cardId);
+                if (card && card.focus_cost <= remainingFocus) {
+                    cardsToPlay.push(cardId);
+                    remainingFocus -= card.focus_cost;
+                    break; // Just use one heal card
+                }
+            }
+        }
+        
+        // Priority 3: Some attacks, but fewer than normal
+        const maxAttacks = Math.min(2, attackCards.length);
+        const attacksToUse = Math.floor(Math.random() * (maxAttacks + 1));
+        
+        for (let i = 0; i < attacksToUse; i++) {
+            if (attackCards.length > 0 && remainingFocus > 0) {
+                // Prefer lower cost attacks when being defensive
+                attackCards.sort((a, b) => {
+                    const cardA = getCardById(a);
+                    const cardB = getCardById(b);
+                    return (cardA?.focus_cost || 0) - (cardB?.focus_cost || 0);
+                });
+                
+                const cardId = attackCards.shift();
+                const card = getCardById(cardId);
+                
+                if (card && card.focus_cost <= remainingFocus) {
+                    cardsToPlay.push(cardId);
+                    remainingFocus -= card.focus_cost;
+                }
+            }
+        }
+    } 
+    else if (strategy === "aggressive") {
+        displayCombatMessage(`${combatState.currentFight.enemy.name} looks aggressive!`);
+        
+        // Priority 1: Attack cards, favor high damage ones
+        attackCards.sort((a, b) => {
+            const cardA = getCardById(a);
+            const cardB = getCardById(b);
+            return (cardB?.base_damage || 0) - (cardA?.base_damage || 0);
+        });
+        
+        // Try to use as many attack cards as possible
+        for (const cardId of attackCards) {
+            const card = getCardById(cardId);
+            if (card && card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+            }
+            
+            // Keep enough focus for at least one utility card if possible
+            if (utilityCards.length > 0 && 
+                remainingFocus <= getCardById(utilityCards[0])?.focus_cost) {
+                break;
+            }
+        }
+        
+        // Priority 2: Offensive utility cards
+        for (const cardId of utilityCards) {
+            const card = getCardById(cardId);
+            // Favor damage boost and similar offensive buffs
+            if (card && ['damage_boost', 'focus_gain'].includes(card.effect_type) && 
+                card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+                break; // Just one utility card
+            }
+        }
+        
+        // Priority 3: Healing only if critically low
+        const healthPercentage = (combatState.enemyHealth / combatState.enemyMaxHealth) * 100;
+        if (healthPercentage < 25) {
+            for (const cardId of healCards) {
+                const card = getCardById(cardId);
+                if (card && card.focus_cost <= remainingFocus) {
+                    cardsToPlay.push(cardId);
+                    remainingFocus -= card.focus_cost;
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        // Balanced strategy
+        displayCombatMessage(`${combatState.currentFight.enemy.name} watches carefully...`);
+        
+        // Get a mix of card types
+        
+        // Priority 1: One defense card if we're threatened
+        if (combatState.enemyThreatAssessment > 5 && defenseCards.length > 0) {
+            const cardId = defenseCards[0];
+            const card = getCardById(cardId);
+            if (card && card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+            }
+        }
+        
+        // Priority 2: Some attack cards
+        attackCards.sort(() => Math.random() - 0.5); // Randomize for balanced approach
+        const maxAttacks = Math.min(3, attackCards.length);
+        const attacksToUse = Math.floor(1 + Math.random() * maxAttacks);
+        
+        for (let i = 0; i < attacksToUse; i++) {
+            if (attackCards.length > 0 && remainingFocus > 0) {
+                const cardId = attackCards.shift();
+                const card = getCardById(cardId);
+                
+                if (card && card.focus_cost <= remainingFocus) {
+                    cardsToPlay.push(cardId);
+                    remainingFocus -= card.focus_cost;
+                }
+            }
+        }
+        
+        // Priority 3: Healing if health is below 40%
+        const healthPercentage = (combatState.enemyHealth / combatState.enemyMaxHealth) * 100;
+        if (healthPercentage < 40 && healCards.length > 0) {
+            const cardId = healCards[0];
+            const card = getCardById(cardId);
+            if (card && card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+            }
+        }
+        
+        // Priority 4: One utility card if we have focus left
+        if (utilityCards.length > 0 && remainingFocus > 0) {
+            utilityCards.sort(() => Math.random() - 0.5); // Random utility card
+            const cardId = utilityCards[0];
+            const card = getCardById(cardId);
+            if (card && card.focus_cost <= remainingFocus) {
+                cardsToPlay.push(cardId);
+                remainingFocus -= card.focus_cost;
+            }
+        }
+    }
+    
+    // If we haven't selected any cards, try to pick something affordable
+    if (cardsToPlay.length === 0) {
+        // Find the cheapest card in the hand
+        let cheapestCard = null;
+        let lowestCost = Infinity;
+        
+        for (const cardId of combatState.enemyHand) {
+            const card = getCardById(cardId);
+            if (card && card.focus_cost < lowestCost && card.focus_cost <= enemyFocus) {
+                cheapestCard = cardId;
+                lowestCost = card.focus_cost;
+            }
+        }
+        
+        if (cheapestCard) {
+            cardsToPlay.push(cheapestCard);
+        }
+    }
+    
+    // Now play all selected cards with a delay between each
+    playEnemyCards(cardsToPlay);
+}
+
+// Play enemy cards sequentially with a delay
+function playEnemyCards(cardIds) {
+    if (!cardIds || cardIds.length === 0) {
+        displayCombatMessage(`${combatState.currentFight.enemy.name} does nothing this turn.`);
+        return;
+    }
+    
+    // Play cards one by one with delay
+    let cardIndex = 0;
+    
+    function playNextCard() {
+        if (cardIndex >= cardIds.length || !combatState.inCombat) {
+            return; // All cards played or combat ended
+        }
+        
+        const cardId = cardIds[cardIndex];
+        const card = getCardById(cardId);
+        
+        if (card) {
+            // Add to enemy played cards
+            combatState.enemyPlayedCards.push(cardId);
+            
+            // Remove from enemy hand
+            combatState.enemyHand = combatState.enemyHand.filter(id => id !== cardId);
+            
+            // Display the played card
+            displayCombatMessage(`${combatState.currentFight.enemy.name} plays ${card.name}!`);
+            
+            // Apply card effect
+            applyCardEffect(card, 'enemy');
+            
+            // Check if combat has ended
+            if (!combatState.inCombat) {
+                return;
+            }
+        }
+        
+        // Move to next card with delay
+        cardIndex++;
+        setTimeout(playNextCard, 800);
+    }
+    
+    // Start playing cards
+    playNextCard();
+}
+
+// Expand combatState to include a function for the enemy to directly counter a player card
+// This can be called from playCardImmediately to allow immediate enemy responses
+function enemyImmediateResponse(playerCard) {
+    // Only respond sometimes to make it interesting (50% chance)
+    if (Math.random() > 0.5) return;
+    
+    // Only respond if the card is significant
+    if (playerCard.type === 'attack' && playerCard.base_damage < 5) return;
+    if (playerCard.type === 'action' && playerCard.effect_type !== 'damage_boost' && 
+        playerCard.effect_type !== 'tank_heal') return;
+    
+    // Find an appropriate response card in the enemy's hand
+    const responseCardId = findCounterCard(playerCard);
+    
+    if (responseCardId) {
+        const responseCard = getCardById(responseCardId);
+        
+        // Display response message
+        displayCombatMessage(`${combatState.currentFight.enemy.name} quickly responds to your ${playerCard.name}!`);
+        
+        // Remove card from enemy hand
+        combatState.enemyHand = combatState.enemyHand.filter(id => id !== responseCardId);
+        
+        // Add to enemy played cards
+        combatState.enemyPlayedCards.push(responseCardId);
+        
+        // Apply card effect after a short delay
+        setTimeout(() => {
+            displayCombatMessage(`${combatState.currentFight.enemy.name} plays ${responseCard.name}!`);
+            applyCardEffect(responseCard, 'enemy');
+        }, 800);
+    }
+}
+
+// Find an appropriate counter card in the enemy's hand
+function findCounterCard(playerCard) {
+    // Define what makes a good counter for each player card type
+    if (playerCard.type === 'attack') {
+        // Counter attack with defense or reflect
+        for (const cardId of combatState.enemyHand) {
+            const card = getCardById(cardId);
+            if (card && card.type === 'action' && 
+                (card.effect_type === 'defense' || card.effect_type === 'reflect')) {
+                return cardId;
+            }
+        }
+    } 
+    else if (playerCard.type === 'action') {
+        if (playerCard.effect_type === 'damage_boost') {
+            // Counter damage boost with a strong attack to hit before boost applies fully
+            for (const cardId of combatState.enemyHand) {
+                const card = getCardById(cardId);
+                if (card && card.type === 'attack' && card.base_damage >= 5) {
+                    return cardId;
+                }
+            }
+        }
+        else if (playerCard.effect_type === 'heal') {
+            // Counter healing with a strong attack to negate the heal
+            for (const cardId of combatState.enemyHand) {
+                const card = getCardById(cardId);
+                if (card && card.type === 'attack' && card.base_damage >= 4) {
+                    return cardId;
+                }
+            }
+        }
+    }
+    
+    // No specific counter found
+    return null;
+}
+// Updated playCardImmediately function to include enemy responses
+function playCardImmediately(cardId, card) {
+    // Check if player has enough focus
+    if (card.focus_cost > combatState.playerFocus) {
+        displayCombatMessage("Not enough focus to play this card!");
+        return;
+    }
+    
+    // Remove card from selection, hand, and add to played cards
+    combatState.selectedCards = combatState.selectedCards.filter(id => id !== cardId);
+    combatState.playerHand = combatState.playerHand.filter(id => id !== cardId);
+    combatState.playedCards.push(cardId);
+    
+    // Track this card for AI response
+    combatState.playerLastPlayed.push({
+        id: cardId,
+        card: card,
+        turnPlayed: combatState.turnCount
+    });
+    
+    // Limit history to last 5 cards
+    if (combatState.playerLastPlayed.length > 5) {
+        combatState.playerLastPlayed.shift();
+    }
+    
+    // Deduct focus cost
+    combatState.playerFocus -= card.focus_cost;
+    combatState.totalFocusCost -= card.focus_cost;
+    
+    // Display message
+    displayCombatMessage(`You played ${card.name}!`);
+    
+    // Apply card effect
+    applyCardEffect(card, 'player');
+    
+    // Give enemy chance to respond immediately
+    enemyImmediateResponse(card);
+    
+    // Update UI
+    displayPlayerHand();
+    updateFocusDisplay();
+    updateFocusCostDisplay();
+    
+    // Check if combat has ended
+    checkCombatEnd();
+}
